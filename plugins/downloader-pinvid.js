@@ -1,16 +1,44 @@
 import fetch from 'node-fetch'
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-if (!text) throw m.reply(`Ingresa un link de pinterest\n*✧ Ejemplo:* ${usedPrefix}${command} https://id.pinterest.com/pin/575757133623547811/`);
-conn.sendMessage(m.chat, { react: { text: "🕒", key: m.key } });
-	let ouh = await fetch(`https://api.agatz.xyz/api/pinterest?url=${text}`)
-  let gyh = await ouh.json()
-	await conn.sendFile(m.chat, gyh.data.result, `pinvideobykeni.mp4`, `*✧ Url:* ${gyh.data.url}`, m)
-	await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+  if (!args[0]) {
+    return m.reply(`⚠️ Ingresa el enlace de un video de Pinterest.\n\nEjemplo:\n${usedPrefix + command} https://pin.it/5nBeakRXD`)
+  }
+
+  const url = args[0]
+  if (!url.match(/^https?:\/\/(www\.)?pin(it|terest)\.([a-z]{2,})\//)) {
+    return m.reply('🔗 El enlace proporcionado no parece ser válido de Pinterest.')
+  }
+
+  try {
+    const api = `https://api.nekorinn.my.id/downloader/pinterest?url=${encodeURIComponent(url)}`
+    const res = await fetch(api)
+    const json = await res.json()
+
+    if (!json.status || !json.result?.medias?.length) {
+      throw '❌ No se pudo obtener el video de Pinterest.'
+    }
+
+    // Buscar el primer archivo que sea video y tenga extensión mp4
+    const video = json.result.medias.find(v => v.extension === 'mp4')
+
+    if (!video) {
+      return m.reply('⚠️ No se encontró ningún video en este enlace de Pinterest.')
+    }
+
+    const caption = `🎬 *Pinterest Video Descargado*\n📦 Calidad: ${video.quality || 'Desconocida'}\n📁 Tamaño: ${video.formattedSize || '-'}\n📎 Fuente: Pinterest\n\nBot: *Keis Ai*`
+    await conn.sendFile(m.chat, video.url, 'video.mp4', caption, m)
+  } catch (e) {
+    console.error(e)
+    m.reply('❌ Error al procesar el video. Asegúrate de que el enlace sea correcto.')
+  }
 }
-handler.help = ['pinvid *<link>*']
+
+handler.command = /^pinvid$/i
 handler.tags = ['downloader']
-handler.command = /^(pinvid|pinvideo)$/i
+handler.help = ['pinvid <link>']
 handler.premium = false
 handler.register = true
+handler.limit = true
+
 export default handler

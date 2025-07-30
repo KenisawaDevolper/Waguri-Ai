@@ -25,43 +25,49 @@ handler.all = async function (m) {
 
         global.ephemeral = '86400'
 
+// Obtener configuración desde la DB
+let settings = global.db?.data?.settings?.[conn?.user?.jid] || {}
+
+let newsletterId = settings.id_canal_owner || '120363348355703366'
+let canalSource = settings.canal_owner || 'https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F'
+let watermark = settings.wm || 'Waguri x KenisawaDev'
+let botname = settings.botName || 'Waguri Ai'
 
 global.rcanal = {
- contextInfo: {
-     	isForwarded: true,
+  contextInfo: {
+    isForwarded: true,
     forwardedNewsletterMessageInfo: {
-      newsletterJid: "120363348355703366@newsletter",
+      newsletterJid: newsletterId + '@newsletter',
       serverMessageId: 100,
-      newsletterName: global.ucapan,
-   }, 
-   externalAdReply: {
-    showAdAttribution: true, 
-    title: "Waguri Ai ✧", 
-    body: wm, 
-    mediaUrl: "https://files.catbox.moe/t0s63z.jpg", 
-    description: null, 
-    previewType: "PHOTO", 
-    thumbnailUrl: "https://pomf2.lain.la/f/ut2z21cs.jpg", 
-    thumbnail: fs.readFileSync('./media/fake.jpg'),
-    sourceUrl: sig, 
-    mediaType: 1, 
-    previewType: 0,
-    renderLargerThumbnail: false 
-    }, 
-    }, 
+      newsletterName: botname,
+    },
+    externalAdReply: {
+      showAdAttribution: true,
+      title: botname,
+      body: watermark,
+      mediaUrl: "https://files.catbox.moe/t0s63z.jpg",
+      description: null,
+      previewType: "PHOTO",
+      thumbnailUrl: "https://pomf2.lain.la/f/ut2z21cs.jpg",
+      thumbnail: fs.readFileSync('./media/fake.jpg'),
+      sourceUrl: canalSource,
+      mediaType: 1,
+      previewType: 0,
+      renderLargerThumbnail: false
     }
-    
+  }
+}
 
 global.adReply = {
-    contextInfo: {
-    	isForwarded: true,
+  contextInfo: {
+    isForwarded: true,
     forwardedNewsletterMessageInfo: {
-      newsletterJid: "120363348355703366@newsletter",
+      newsletterJid: newsletterId + '@newsletter',
       serverMessageId: 100,
-      newsletterName: global.ucapan,
-    },
+      newsletterName: botname,
     },
   }
+}
 
         global.sig = {
             contextInfo: {

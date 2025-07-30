@@ -3,6 +3,7 @@ import FormData from 'form-data';
 import yts from 'yt-search';
 
 let handler = async (m, { conn, args, text }) => {
+
   if (!args[0]) throw m.reply(`✧ Ejemplo: ${usedPrefix}${command} https://youtube.com/watch?v=gR3nlpwRTRA`);
   
 await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }})
@@ -15,19 +16,6 @@ if (mp3Result.success) {
   console.log("Title:", mp3Result.data.title);
   console.log("Download URL:", mp3Result.data.downloadUrl);
 
-const caption = `
-      *💮 YOUTUBE DOWNLOADER MP3 💮*
- 
-  ✧ : \`titulo;\` ${tes.title || 'no encontrado'}
-  ✧ : \`artista;\` ${tes.author.name || 'no encontrado'}
-  ✧ : \`duracion;\` ${tes.duration || 'no encontrado'}
-  ✧ : \`tipo;\` ${mp3Result.data.type || 'no encontrado'}
- 
-> ${wm}
-> Pedido de @${m.sender.split('@')[0]}
-> url: ${tes.url}`;
-
-//await m.reply(caption)
 await conn.sendMessage(m.chat, {
       audio: { url: mp3Result.data.downloadUrl },
       mimetype: "audio/mp4",

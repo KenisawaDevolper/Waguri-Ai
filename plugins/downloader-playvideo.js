@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import yts from 'yt-search'
 
 let handler = async (m, { conn, command, text, usedPrefix }) => {
+const settings = global.db.data.settings[conn.user.jid] || {}
   if (!text) throw m.reply(`✧ Ejemplo: ${usedPrefix}${command} Waguri Edit`);
 
  await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }})
@@ -31,7 +32,7 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
   ✧ : \`calidad;\` ${qualityLabel || 'no encontrado'}
   ✧ : \`fps;\` ${fps || 'no encontrado'}
  
-> ${wm}
+> ${settings.wm}
 > Pedido de @${m.sender.split('@')[0]}`;
 
 //await conn.sendMessage(m.chat, { document: { url: url }, caption: caption, mimetype: 'video/mp4', fileName: `${title}` + `.mp4`}, {quoted: m })

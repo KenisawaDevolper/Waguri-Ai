@@ -79,8 +79,8 @@ const allTags = {
 
 const defaultMenu = {
   before: `
-╭─╼⃝🦋˚｡  𝐇𝐨𝐥𝐚, %name ❀
-│  Soy *Waguri Ai*, tu asistente virtual en WhatsApp!
+╭─╼⃝💎˚｡  𝐇𝐨𝐥𝐚, %name ❀
+│  Soy *%botName*, tu asistente virtual en WhatsApp!
 │  Estoy aquí para ayudarte con comandos, datos,
 │  herramientas, juegos y mucho más ˚₊‧୭̥⋆｡˚ ❀
 │
@@ -100,7 +100,7 @@ const defaultMenu = {
   after: `
 > 🧸 ︰Puedes usar *.menu <categoría>* para ver un menú específico.
 > 📌 ︰Ejemplo: *.menu tools*
-╰╼⃝ \`🐰 𝙒𝙖𝙜𝙪𝙧𝙞 𝘼𝙞 - KenisawaDev\``
+╰╼⃝ \`%wm\``
 }
 
 let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
@@ -110,6 +110,9 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
         let { min, xp, max } = xpRange(level, global.multiplier)
         let name = `@${m.sender.split`@`[0]}`
         let teks = args[0] || ''
+        let setting = global.db.data.settings[conn.user.jid] || {}
+        let botName = setting.botName || "Waguri Ai"
+        let wm = setting.wm || "Waguri x KenisawaDev"
         
         let d = new Date(new Date + 3600000)
         let locale = 'es'
@@ -154,14 +157,16 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
                 uptime,
                 name, 
                 date,
-                time
+                time,
+                botName,
+                wm
             }
 
             let text = menuList.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
                 (_, name) => '' + replace[name])
-
-conn.sendFile(m.chat, "https://files.catbox.moe/vqpb4w.mp4", 'menu.mp4', text, global.fliveLoc2, null)
-
+let setting = global.db.data.settings[conn.user.jid] || {}
+let menuMedia = setting.menuMedia || "https://files.catbox.moe/w4pmmz.jpg"
+conn.sendFile(m.chat, menuMedia, 'menu.jpg', text, global.fliveLoc2, null)
             return
         }
 
@@ -212,13 +217,16 @@ conn.sendFile(m.chat, "https://files.catbox.moe/vqpb4w.mp4", 'menu.mp4', text, g
             uptime, 
             name,
             date,
-            time
+            time,
+            botName,
+            wm
         }
 
         let text = menuCategory.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
             (_, name) => '' + replace[name])
 
-conn.sendFile(m.chat, "https://files.catbox.moe/qzj7we.mp4", 'menu.mp4', text, global.fliveLoc2, null)
+let menuMedia = setting.botIcon || "https://files.catbox.moe/gi65bh.png"
+conn.sendFile(m.chat, menuMedia, 'menu.jpg', text, global.fliveLoc2, null)
 
     } catch (e) {
         conn.reply(m.chat, 'Perdon, hay un error con el menu', m)

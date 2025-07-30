@@ -1,12 +1,12 @@
-let handler = async (m, { conn, text }) => {
-  if (!text) return m.reply('Ingresa un Promt.\nEjemplo : artai Cute Girl')
-  await conn.sendMessage(m.chat, {
-    image: { url: `https://www.abella.icu/art-ai?q=${encodeURIComponent(text)}` }
-  }, { quoted: m })
-}
+import { AIFreeboxImage } from '../lib/aifreebox.js'
 
-handler.help = ['artai']
-handler.tags = ['ai']
-handler.command = ['artai','art']
+const handler = async (m, { text, args }) => {
+  if (!text) return m.reply('🎨 Escribe una idea para generar arte.')
+  const imageUrl = await AIFreeboxImage(text, '16:9', 'ai-art-generator')
+  await conn.sendFile(m.chat, imageUrl, 'aiimage.jpg', `🎨 Imagen generada con AIFreeBox:\n${text}`, m)
+}
+handler.command = /^art$/i
+handler.tags = ["ai"]
+handler.help = ["art"]
 
 export default handler

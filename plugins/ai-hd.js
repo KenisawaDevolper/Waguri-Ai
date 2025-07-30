@@ -1,84 +1,57 @@
-import FormData from "form-data"
-import Jimp from "jimp"
+import fetch from 'node-fetch'
+import { FormData } from "formdata-node"
+import { uploadPomf } from '../lib/uploadImage.js'
 
-let handler = async (m, { conn, usedPrefix, command }) => {
-  conn.hdr = conn.hdr ? conn.hdr : {}
-  if (m.sender in conn.hdr)
-    throw m.reply("✧ Aún hay procesos en el chat >//<");
-  let q = m.quoted ? m.quoted : m
-  let mime = (q.msg || q).mimetype || q.mediaType || ""
-  if (!mime)
-    throw m.reply(`*✧ Etiqueta una Imagen.*`)
-  if (!/image\/(jpe?g|png)/.test(mime))
-    throw m.reply(`*✧ Etiqueta una Imagen.*`);
-  else conn.hdr[m.sender] = true;
-  m.reply("✧ Mejorando calidad de imagen...")
-  let img = await q.download?.()
-  let error
-  try {
-    const This = await processing(img, "enhance")
-    conn.sendFile(m.chat, This, "", "`✧ Listo >//<`", m)
-  } catch (er) {
-    error = true
-  } finally {
-    if (error) {
-      m.reply("Error :(")
+let handler = async (m, { conn, usedPrefix, command, text }) => {
+const settings = global.db.data.settings[conn.user.jid] || {}
+    try {
+        let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
+        let name = await conn.getName(who)
+        let q = m.quoted ? m.quoted : m
+        let mime = (q.msg || q).mimetype || ''
+        if (!mime) throw m.reply('✧ Responde a una *Imagen*.')
+        m.reply(wait)
+        let media = await q.download()
+        removeBackground(media)
+        .then((result) => {
+    conn.sendMessage(m.chat, {
+      image: { url: result.result_url },
+      caption: settings.wm,
+    }, { quoted: m });
+  })
+        .catch(err => console.log(err.message))
+    } catch (error) {
+        console.error(error)
+        m.reply('Internal server error')
     }
-    delete conn.hdr[m.sender]
-  }
 }
 
-handler.help = ['hd', 'remini']
+handler.help = ['hd']
 handler.tags = ['ai']
-handler.command = /^(hd|remini)$/i
+handler.command = /^(hd)$/i
 
 handler.register = true
-handler.limit = 10
-handler.disable = false
+handler.limit = 3
 
 export default handler
 
-async function processing(urlPath, method) {
-  return new Promise(async (resolve, reject) => {
-    let Methods = ["enhance"]
-    Methods.includes(method) ? (method = method) : (method = Methods[0]);
-    let buffer,
-      Form = new FormData(),
-      scheme = "https" + "://" + "inferenceengine" + ".vyro" + ".ai/" + method;
-    Form.append("model_version", 1, {
-      "Content-Transfer-Encoding": "binary",
-      contentType: "multipart/form-data; charset=uttf-8",
-    });
-    Form.append("image", Buffer.from(urlPath), {
-      filename: "enhance_image_body.jpg",
-      contentType: "image/jpeg",
-    });
-    Form.submit(
-      {
-        url: scheme,
-        host: "inferenceengine" + ".vyro" + ".ai",
-        path: "/" + method,
-        protocol: "https:",
-        headers: {
-          "User-Agent": "okhttp/4.9.3",
-          Connection: "Keep-Alive",
-          "Accept-Encoding": "gzip",
-        },
-      },
-      function (err, res) {
-        if (err) reject();
-        let data = [];
-        res
-          .on("data", function (chunk, resp) {
-            data.push(chunk);
-          })
-          .on("end", () => {
-            resolve(Buffer.concat(data));
-          });
-        res.on("error", (e) => {
-          reject();
-        });
-      }
-    );
-  });
+const removeBackground = async (imageBuffer) => {
+    if (!imageBuffer?.length) throw Error (`mana file nya`)
+
+    const body = new FormData()
+    body.append("image", new Blob([imageBuffer]))
+    body.append("scale", "2")
+
+    const headers = {
+        "accept": "application/json",
+        "x-client-version": "web",
+        ...body.headers
+    }
+
+    const response = await fetch("https://api2.pixelcut.app/image/upscale/v1", {
+        headers, body, "method": "POST"
+    })
+
+    if(!response.ok) throw Error (`${response.status} ${response.statusText}\n${await response.text() || null}`)
+    return await response.json()
 }
