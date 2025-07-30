@@ -1,33 +1,48 @@
-let cooldowns = {}
+const cooldowns = {}
 
 let handler = async (m, { conn }) => {
+  const name = await conn.getName(m.sender)
+  const user = global.db.data.users[m.sender]
+  const settings = global.db.data.settings[conn.user.jid] || {}
+  const tiempoEspera = 5 * 60 // 5 minutos
 
-  let hasil = Math.floor(Math.random() * 5000)
-  let name = conn.getName(m.sender)
-  
-  let tiempoEspera = 5 * 60
+  const recompensa = Math.floor(Math.random() * 5000) + 1500 // mínimo 1500
+
   if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempoEspera * 1000) {
     let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempoEspera * 1000 - Date.now()) / 1000))
-    conn.reply(m.chat, `✧ Hola ${name}, Ya has minado recientemente, espera ⏱ *${tiempoRestante}* para regresar a la Mina.`, m, rcanal)
-    return
+    return conn.reply(m.chat, `
+✧ *Hola ${name}*, ya has minado recientemente.
+⏱ Espera *${tiempoRestante}* para volver a entrar a la mina.
+`, m)
   }
-  
-  global.db.data.users[m.sender].exp += hasil
-  let txt = `✧ Genial! minaste *${hasil} 💫 XP.*`
-  await m.react('⛏')
-  await conn.reply(m.chat, txt, m, rcanal)
-  
+
+  user.exp += recompensa
   cooldowns[m.sender] = Date.now()
+
+  const mensaje = `
+⛏️ *¡Minería exitosa!*
+
+➪ Ganaste: *+${recompensa} 💫 XP*
+➪ Usuario: *${name}*
+
+Sigue minando para mejorar tu experiencia.
+
+© creado por *kenisawadev* ⚙️
+`.trim()
+
+  await m.react('⛏')
+  await conn.reply(m.chat, mensaje, m)
 }
+
 handler.help = ['minar']
 handler.tags = ['rpg']
-handler.command = ['minar', 'miming', 'mine'] 
-handler.register = true 
+handler.command = ['minar', 'miming', 'mine']
+handler.register = true
+
 export default handler
 
 function segundosAHMS(segundos) {
-  let horas = Math.floor(segundos / 3600)
-  let minutos = Math.floor((segundos % 3600) / 60)
+  let minutos = Math.floor(segundos / 60)
   let segundosRestantes = segundos % 60
-  return `${minutos} minutos y ${segundosRestantes} segundos`
+  return `${minutos}m ${segundosRestantes}s`
 }
