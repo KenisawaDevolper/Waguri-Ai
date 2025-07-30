@@ -61,44 +61,53 @@ export async function handler(chatUpdate) {
             let user = global.db.data.users[m.sender]
             if (typeof user !== 'object')
                 global.db.data.users[m.sender] = {}
-            if (user) {
-                if (!isNumber(user.exp))
-                    user.exp = 0
-                if (!isNumber(user.limit))
-                    user.limit = 10
-                if (!isNumber(user.afk))
-                    user.afk = -1
-                if (!('afkReason' in user))
-                    user.afkReason = ''
-                if (!('banned' in user))
-                    user.banned = false
-                if (!('banReason' in user))
-                    user.banReason = ''
-                if (!('role' in user))
-                    user.role = 'Free user'
-                if (!('autolevelup' in user))
-                    user.autolevelup = false
-               if (!isNumber(user.bank))
-                    user.bank = 0
-            } else
-                global.db.data.users[m.sender] = {
-                    exp: 0,
-                    limit: 10,
-                    lastclaim: 0,
-                    registered: false,
-                    name: m.name,
-                    age: -1,
-                    regTime: -1,
-                    afk: -1,
-                    afkReason: '',
-                    banned: false,
-                    banReason: '',
-                    warn: 0,
-                    level: 0,
-                    role: 'Free user',
-                    autolevelup: false,
-                    bank: 0
-                }
+if (user) {
+    if (!isNumber(user.exp)) user.exp = 0
+    if (!isNumber(user.limit)) user.limit = 10
+    if (!isNumber(user.afk)) user.afk = -1
+    if (!('afkReason' in user)) user.afkReason = ''
+    if (!('banned' in user)) user.banned = false
+    if (!('banReason' in user)) user.banReason = ''
+    if (!('role' in user)) user.role = 'Free user'
+    if (!('autolevelup' in user)) user.autolevelup = false
+    if (!isNumber(user.bank)) user.bank = 0
+
+    // NUEVOS CAMPOS RPG
+    if (!('marry' in user)) user.marry = null
+    if (!('married' in user)) user.married = null
+if (!('marryPending' in user)) user.marryPending = null
+if (!('birthday' in user))
+    user.birthday = ''
+if (!('lastBirthdayClaim' in user))
+    user.lastBirthdayClaim = ''
+    
+} else {
+    global.db.data.users[m.sender] = {
+        exp: 0,
+        limit: 10,
+        lastclaim: 0,
+        registered: false,
+        name: m.name,
+        age: -1,
+        regTime: -1,
+        afk: -1,
+        afkReason: '',
+        banned: false,
+        banReason: '',
+        warn: 0,
+        level: 0,
+        role: 'Free user',
+        autolevelup: false,
+        bank: 0,
+
+        // NUEVOS CAMPOS RPG
+        marry: null,
+        married: null,
+        marryPending: null,
+        birthday: '',
+        lastBirthdayClaim: ''
+    }
+}
             let chat = global.db.data.chats[m.chat]
             if (typeof chat !== 'object')
                 global.db.data.chats[m.chat] = {}
@@ -120,7 +129,7 @@ export async function handler(chatUpdate) {
                 if (!('sDemote' in chat))
                     chat.sDemote = ''
                 if (!('delete' in chat))
-                    chat.delete = false
+                    chat.delete = true
                 if (!('antiLink' in chat))
                     chat.antiLink = false
                 if (!('viewonce' in chat))
@@ -153,7 +162,7 @@ export async function handler(chatUpdate) {
                     sBye: '',
                     sPromote: '',
                     sDemote: '',
-                    delete: false,
+                    delete: true,
                     antiLink: false,
                     viewonce: false,
                     simi: false,
@@ -173,12 +182,32 @@ export async function handler(chatUpdate) {
                 if (!('restrict' in settings)) settings.restrict = false
                 if (!('anticall' in settings)) settings.anticall = true
                 if (!('restartDB' in settings)) settings.restartDB = 0
+                if (!('botIcon' in settings)) settings.botIcon = 'https://files.catbox.moe/gi65bh.png'
+                if (!('menuMedia' in settings)) settings.menuMedia = 'https://files.catbox.moe/w4pmmz.jpg'
+                if (!('botName' in settings)) settings.botName = 'Waguri Ai'
+                if (!('moneda_rpg' in settings)) settings.moneda_rpg = 'Eris'
+                if (!('wm' in settings)) settings.wm = 'Waguri x KenisawaDev'
+                if (!('owner_numero' in settings)) settings.owner_numero = ['5493865642938', '0']
+                if (!('owner_nombre' in settings)) settings.owner_nombre = 'KenisawaDev'
+                if (!('link_owner' in settings)) settings.link_owner = 'https://wa.me/5493865642938'
+                if (!('canal_owner' in settings)) settings.canal_owner = 'https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F'
+                if (!('id_canal_owner' in settings)) settings.id_canal_owner = '120363348355703366'
             } else global.db.data.settings[this.user.jid] = {
                 self: false,
                 autoread: true,
                 anticall: true,
                 restartDB: 0,
-                restrict: false
+                restrict: false,
+                botIcon: 'https://files.catbox.moe/gi65bh.png',
+                menuMedia: 'https://files.catbox.moe/w4pmmz.jpg',
+                botName: 'Waguri Ai',
+                moneda_rpg: 'Eris',
+                wm: 'Waguri x KenisawaDev',
+                owner_numero: ['5493865642938', '0'],
+                owner_nombre: 'KenisawaDev',
+                link_owner: 'https://wa.me/5493865642938',
+                canal_owner: 'https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F',
+                id_canal_owner: '120363348355703366'
             }
         } catch (e) {
             console.error(e)
@@ -197,11 +226,12 @@ export async function handler(chatUpdate) {
             return
         if (typeof m.text !== 'string')
             m.text = ''
-               const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
-const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+// Detectar si el bot está usando lid o no
+const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net'
+const settings = global.db.data.settings[conn.user.jid] || {}
+// Detectar si el mensaje proviene de un owner
+const isROwner = (settings.owner_numero || []).map(n => n + detectwhat).includes(m.sender)
 const isOwner = isROwner || m.fromMe
-const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
-//const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
 const isPrems = isROwner || global.db.data.users[m.sender].premiumTime > 0
 
         if (!isOwner && opts['self']) return;
@@ -218,25 +248,36 @@ const isPrems = isROwner || global.db.data.users[m.sender].premiumTime > 0
         if (m.isBaileys)
             return
         m.exp += Math.ceil(Math.random() * 10)
-
+        
         let usedPrefix
         let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
-const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
-const participants = (m.isGroup ? groupMetadata.participants : []) || []
-const normalizeJid = jid => jid?.replace(/[^0-9]/g, '')
-const cleanJid = jid => jid?.split(':')[0] || ''
-const senderNum = normalizeJid(m.sender)
-const botNums = [this.user?.jid, this.user?.lid].map(j => normalizeJid(cleanJid(j)))
-const user = m.isGroup 
-  ? participants.find(u => normalizeJid(u.id) === senderNum) 
-  : {}
-const bot = m.isGroup 
-  ? participants.find(u => botNums.includes(normalizeJid(u.id))) 
+// Obtener datos del grupo
+const groupMetadata = m.isGroup
+  ? await conn.groupMetadata(m.chat).catch(_ => null)
   : {}
 
-const isRAdmin = user?.admin === 'superadmin'
-const isAdmin = isRAdmin || user?.admin === 'admin'
-const isBotAdmin = !!bot?.admin || bot?.admin === 'admin'
+const participants = m.isGroup ? groupMetadata.participants || [] : []
+
+// Este es tu ID real
+const senderJid = m.sender // Ej: '5493865642938@s.whatsapp.net'
+const senderLid = (participants.find(p => p.jid === senderJid) || {}).lid
+
+// Este es el ID del bot
+const botJid = conn.user?.jid // Ej: '5493865208712@s.whatsapp.net'
+const botLid = (participants.find(p => p.jid === botJid) || {}).lid
+
+// Usuario en el grupo
+const user = participants.find(p => p.jid === senderJid || p.lid === senderLid) || {}
+const bot = participants.find(p => p.jid === botJid || p.lid === botLid) || {}
+
+const isRAdmin = user.admin === 'superadmin'
+const isAdmin = isRAdmin || user.admin === 'admin'
+
+const isBotAdmin = bot.admin === 'admin' || bot.admin === 'superadmin'
+
+// 📢 Detecta si es una cuenta Business o Canal
+m.isWABusiness = ['smba', 'smbi'].includes(global.conn.authState?.creds?.platform)
+m.isChannel = m.chat.includes('@newsletter') || m.sender.includes('@newsletter')
 	
         const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
         for (let name in global.plugins) {
@@ -424,17 +465,26 @@ const isBotAdmin = !!bot?.admin || bot?.admin === 'admin'
                     m.error = e
                     console.error(e)
                     if (e) {
-                        let text = format(e)
-                        for (let key of Object.values(global.APIKeys))
-                            text = text.replace(new RegExp(key, 'g'), '#HIDDEN#')
-                        if (e.name)
-                            for (let [jid] of global.owner.filter(([number, _, isDeveloper]) => isDeveloper && number)) {
-                                let data = (await conn.onWhatsApp(jid))[0] || {}
-                                if (data.exists)
-                                    m.reply(`*✧ Plugin:* ${m.plugin}\n*✧ Emisor:* ${m.sender}\n*✧ Chat:* ${m.chat}\n*✧ Comando:* ${usedPrefix}${command} ${args.join(' ')}\n✧ *Error Logs:*\n\n\`\`\`${e}\`\`\``.trim(), data.jid)
-                            }
-                        //m.reply(text)
-                    }
+    let text = format(e)
+    for (let key of Object.values(global.APIKeys || {}))
+        text = text.replace(new RegExp(key, 'g'), '#HIDDEN#')
+
+    if (e.name) {
+        const settings = global.db.data.settings[conn.user.jid] || {}
+        let developers = (settings.developer_numero || settings.owner_numero || [])
+        for (let jid of developers) {
+            let id = jid + (jid.includes('@') ? '' : (m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net'))
+            let data = (await conn.onWhatsApp(id).catch(() => [{}]))[0] || {}
+            if (data.exists) {
+                await m.reply(
+                    `*✧ Plugin:* ${m.plugin}\n*✧ Emisor:* ${m.sender}\n*✧ Chat:* ${m.chat}\n*✧ Comando:* ${usedPrefix}${command} ${args.join(' ')}\n✧ *Error Logs:*\n\n\`\`\`${e}\`\`\``.trim(),
+                    data.jid
+                )
+            }
+        }
+    }
+    //m.reply(text)
+}
                 } finally {
                     // m.reply(util.format(_user))
                     if (typeof plugin.after === 'function') {
@@ -445,7 +495,7 @@ const isBotAdmin = !!bot?.admin || bot?.admin === 'admin'
                         }
                     }
                     if (m.limit)
-                        m.reply(+m.limit + ' Eris usado ✧ ')
+                        m.reply(+m.limit + ` ${global.db.data.settings[conn.user.jid].moneda || 'eris'} usado ✧ `)
                 }
                 break
             }
@@ -530,7 +580,7 @@ export async function participantsUpdate( { id, participants, action }) {
 text: text,
 contextInfo: {
 externalAdReply: {
-title: global.wm,
+title: global.db.data.settings[conn.user.jid].wm,
 body: "Group Notifications",
 thumbnailUrl: pp,
 sourceUrl: "https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F",
@@ -615,8 +665,10 @@ global.dfail = (type, m, conn) => {
         restrict: "> _*✧ Comando desactivado por mi Owner`*_" 
     }[type]
     
-    let deco_msg = "`१✿ᩧ┅═❏✧͚Wag፝uri Aiᩦ❏═┅✿ᩧ̼१`\n"+`${msg}\n`+"`︶ִֶָ⏝︶ִֶָ⏝˖ ࣪ ୨✧୧ ࣪ ˖⏝ִֶָ︶⏝ִֶָ︶`"
-    if (msg) return conn.reply(m.chat, estilo(deco_msg), m)
+    let setn = global.db.data.settings[conn.user.jid] || {}
+    let botnombrexd = setn.botName
+    let deco_msg = "`१✿ᩧ┅═❏✧͚"+ setn.botName +"❏═┅✿ᩧ̼१`\n\n"+`${msg}\n\n`+"`︶ִֶָ⏝︶ִֶָ⏝˖ ࣪ ୨✧୧ ࣪ ˖⏝ִֶָ︶⏝ִֶָ︶`"
+    if (msg) return conn.reply(m.chat, deco_msg, m)
 }
 
 let file = global.__filename(import.meta.url, true)
