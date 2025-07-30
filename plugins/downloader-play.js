@@ -95,12 +95,12 @@ const caption = `
       },
       buttons: [
         {
-          buttonId: `${usedPrefix}ytmp3 ${video.url}`,
+          buttonId: `${usedPrefix}ytmp3v2 ${video.url}`,
           buttonText: { displayText: '🎧 Descargar 𝖠𝗎𝖽𝗂𝗈' },
           type: 1,
         },
         {
-          buttonId: `${usedPrefix}ytmp4 ${video.url}`,
+          buttonId: `${usedPrefix}ytmp4v2 ${video.url}`,
           buttonText: { displayText: '🎬 Descargar 𝖵𝗂𝖽𝖾𝗈' },
           type: 1,
         },

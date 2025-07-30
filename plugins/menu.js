@@ -57,43 +57,50 @@ let estilo = (text, style = 1) => {
 };
 
 const allTags = {
-  all: "MENU COMPLETO",
-  main: "MENU PRINCIPAL",
-  downloader: "MENU DOWNLOADER",
-  jadibot: "MENU SUBBOTS",
-  rpg: "MENU RPG",
-  ai: "MENU IA",
-  search: "MENU BUSQUEDA",
-  anime: "MENU ANIME",
-  sticker: "MENU STICKER",
-  fun: "MENU FUN",
-  group: "MENU GRUPO",
-  nsfw: "MENU NSFW",
-  info: "MENU INFO",
-  internet: "MENU INTERNET",
-  owner: "MENU OWNER",
-  tools: "MENU TOOLS",
-  anonymous: "ANONYMOUS CHAT",
-  "": "NO CATEGORY"
+  all: "🌈 MENU COMPLETO",
+  main: "🎀 MENU PRINCIPAL",
+  downloader: "📥 MENU DOWNLOADER",
+  jadibot: "🤖 MENU SUBBOTS",
+  rpg: "🧚 MENU RPG",
+  ai: "🌸 MENU IA",
+  search: "🔍 MENU BÚSQUEDA",
+  anime: "🌙 MENU ANIME",
+  sticker: "✨ MENU STICKERS",
+  fun: "🎉 MENU DIVERSIÓN",
+  group: "👥 MENU GRUPO",
+  nsfw: "🔞 MENU +18",
+  info: "📚 MENU INFO",
+  internet: "🌐 MENU INTERNET",
+  owner: "💼 MENU OWNER",
+  tools: "🛠️ MENU HERRAMIENTAS",
+  anonymous: "🌌 CHAT ANÓNIMO",
+  "": "💫 SIN CATEGORÍA"
 }
 
 const defaultMenu = {
-    before: `
-Hola %name
-Soy un sistema automatizado (WhatsApp Bot) que puede ayudar a hacer algo, buscar y obtener datos/información sólo a través de WhatsApp.
-
-◦ *Libreria:* Baileys
-◦ *Funcion:* Assistant
-
-┌  ◦ Rutina : %uptime
-│  ◦ Fecha : %date
-│  ◦ Hora : %time
-└  ◦ Prefijo Usado : *[ %p ]*
+  before: `
+╭─╼⃝🦋˚｡  𝐇𝐨𝐥𝐚, %name ❀
+│  Soy *Waguri Ai*, tu asistente virtual en WhatsApp!
+│  Estoy aquí para ayudarte con comandos, datos,
+│  herramientas, juegos y mucho más ˚₊‧୭̥⋆｡˚ ❀
+│
+│  ⭒  Librería: *Baileys*
+│  ⭒  Función: *Asistente y más*
+│
+│  🌸 Uptime: %uptime
+│  🗓️ Fecha: %date
+│  🕰️ Hora: %time
+│  💌 Prefijo: *[ %p ]*
+╰──────────── ⋆｡°✩₊
 `.trimStart(),
-    header: '┌  ◦ *%category*',
-    body: '│  ◦ %cmd %islimit %isPremium',
-    footer: '└  ',
-    after: `*Nota:* Escribe .menu <categoría> para seleccionar un menu en específico\n✧ Ejemplo: .menu tools`
+
+  header: '╭── ⋆｡°✩ *`%category`*',
+  body: '│ ⭑ %cmd %islimit %isPremium',
+  footer: '╰──────────── ⋆｡°',
+  after: `
+> 🧸 ︰Puedes usar *.menu <categoría>* para ver un menú específico.
+> 📌 ︰Ejemplo: *.menu tools*
+╰╼⃝ \`🐰 𝙒𝙖𝙜𝙪𝙧𝙞 𝘼𝙞 - KenisawaDev\``
 }
 
 let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
@@ -101,7 +108,7 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
 //        let package = JSON.parse(await fs.promises.readFile(path.join(__dirname, '../package.json')).catch(_ => '{}'))
         let { exp, limit, level, role } = global.db.data.users[m.sender]
         let { min, xp, max } = xpRange(level, global.multiplier)
-        let name = m.pushName || `@${m.sender.split`@`[0]}`
+        let name = `@${m.sender.split`@`[0]}`
         let teks = args[0] || ''
         
         let d = new Date(new Date + 3600000)
@@ -153,25 +160,8 @@ let handler = async (m, { conn, usedPrefix: _p, args = [], command }) => {
             let text = menuList.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
                 (_, name) => '' + replace[name])
 
-conn.sendFile(m.chat, "https://files.catbox.moe/t0s63z.jpg", 'menu.jpg', estilo(text), global.fliveLoc2, null)
+conn.sendFile(m.chat, "https://files.catbox.moe/vqpb4w.mp4", 'menu.mp4', text, global.fliveLoc2, null)
 
-/*            await conn.relayMessage(m.chat, {
-            extendedTextMessage:{
-                text: text, 
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    externalAdReply: {
-                        title: date,
-                        mediaType: 1,
-                        previewType: 0,
-                        renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://pomf2.lain.la/f/4gv01t8y.png',
-                        sourceUrl: 'https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F'
-                    }
-                }, 
-                mentions: [m.sender]
-            }
-        }, {})*/
             return
         }
 
@@ -228,25 +218,8 @@ conn.sendFile(m.chat, "https://files.catbox.moe/t0s63z.jpg", 'menu.jpg', estilo(
         let text = menuCategory.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), 
             (_, name) => '' + replace[name])
 
-conn.sendFile(m.chat, "https://files.catbox.moe/qzj7we.mp4", 'menu.mp4', estilo(text), global.fliveLoc2, null)
+conn.sendFile(m.chat, "https://files.catbox.moe/qzj7we.mp4", 'menu.mp4', text, global.fliveLoc2, null)
 
-/*        await conn.relayMessage(m.chat, {
-            extendedTextMessage:{
-                text: text, 
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    externalAdReply: {
-                        title: date,
-                        mediaType: 1,
-                        previewType: 0,
-                        renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://pomf2.lain.la/f/7b5qzd8.png',
-                        sourceUrl: 'https://whatsapp.com/channel/0029VarbyoN2ZjCkcPW7q33F'
-                    }
-                }, 
-                mentions: [m.sender]
-            }
-        }, {})*/
     } catch (e) {
         conn.reply(m.chat, 'Perdon, hay un error con el menu', m)
         console.error(e)
@@ -255,7 +228,7 @@ conn.sendFile(m.chat, "https://files.catbox.moe/qzj7we.mp4", 'menu.mp4', estilo(
 
 handler.help = ['menu']
 handler.tags = ['main']
-handler.command = /^(menu|help)$/i
+handler.command = /^(menu|help|menú)$/i
 handler.exp = 3
 
 export default handler;

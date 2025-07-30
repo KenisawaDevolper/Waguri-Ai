@@ -1,19 +1,23 @@
-import { areJidsSameUser } from '@adiwajshing/baileys'
-let handler = async (m, { conn, args }) => {
-    let group = m.chat
-    if (/^[0-9]{5,16}-?[0-9]+@g\.us$/.test(args[0])) group = args[0]
-    if (!/^[0-9]{5,16}-?[0-9]+@g\.us$/.test(group)) throw m.reply('Ya no estoy en ese grupo')
-    let groupMetadata = await conn.groupMetadata(group)
-    if (!groupMetadata) throw ' :\\'
-    if (!('participants' in groupMetadata)) throw ' :('
-    let me = groupMetadata.participants.find(user => areJidsSameUser(user.id, conn.user.id))
-    if (!me) throw m.reply('✧ No estoy en ese grupo :(')
-    if (!me.admin) throw m.reply('✧ No soy admin T_T')
-    m.reply('https://chat.whatsapp.com/' + await conn.groupInviteCode(group))
-}
-handler.help = ['linkgroup']
-handler.tags = ['group']
-handler.command = /^link(gro?up)?$/i
+const handler = async (m, { conn, participants, command }) => {
 
+  try {
+    // Obtener el enlace de invitación
+    const inviteCode = await conn.groupInviteCode(m.chat)
+    const inviteLink = `https://chat.whatsapp.com/${inviteCode}`
+
+    return conn.reply(m.chat, `🔗 *Enlace de invitación del grupo:*\n${inviteLink}`, m)
+  } catch (e) {
+    console.error(e)
+    return conn.reply(m.chat, '❌ *No puedo obtener el enlace. Asegúrate que el bot es administrador.*', m)
+  }
+}
+
+handler.help = ['link']
+handler.tags = ['grupo']
+handler.command = ['link', 'invitelink', 'enlace']
+
+handler.group = true
+handler.admin = true
+handler.botAdmin = true
 
 export default handler

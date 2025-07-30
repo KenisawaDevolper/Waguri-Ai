@@ -1,52 +1,60 @@
 import axios from 'axios'
-import fs from 'fs'
-import os from 'os'
-import ffmpeg from 'fluent-ffmpeg'
 import yts from 'yt-search'
-import fetch from 'node-fetch'
 
-const extractVideoID = (url) => {
-  const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
-};
+let handler = async (m, { conn, args, text, usedPrefix, command }) => {
+  if (!text) return m.reply(`✧ Ejemplo: *${usedPrefix + command} Joji Glimpse of Us*`)
 
-let handler = async (m, { conn, command, text, usedPrefix }) => {
-  if (!text) throw m.reply(`✧ Ejemplo: ${usedPrefix}${command} https://youtube.com/watch?v=_r7impapnQY`);
+  await conn.sendMessage(m.chat, { react: { text: '📽️', key: m.key } })
 
- await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }})
+  let search = await yts(text)
+  let video = search.videos[0]
+  if (!video) return m.reply('❌ No se encontró el video.')
 
-  const args = text.split(' ');
-  const videoUrl = args[0];
-  const resolution = args[1] || '480';
+  const quality = '360' // ← más compatible
+  const url = encodeURIComponent(video.url)
+  const dlApi = `https://p.oceansaver.in/ajax/download.php?button=1&start=1&end=1&format=${quality}&iframe_source=https://allinonetools.com/&url=${url}`
 
-const videoID = extractVideoID(videoUrl);
-  if (!videoID) throw m.reply('✧ Ingresa un link válido de YouTube.');
-
+  let session
   try {
-    let dataos = await fetch(`https://api.zenkey.my.id/api/download/ytmp4?url=${videoUrl}&apikey=zenkey`)
-    let dp = await dataos.json()
-    let { title, mediaLink } = dp.result.content[0]
-
-    if (!mediaLink) throw m.reply('No hay respuesta de la api.');
-    
-    const caption = `Aqui tiene su vídeo @${m.sender.split('@')[0]}`;
-
-await conn.sendMessage(m.chat, { document: { url: mediaLink }, caption: caption, mimetype: 'video/mp4', fileName: `${title}` + `.mp4`}, {quoted: m })
-await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
-
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    await conn.sendMessage(m.chat, { react: { text: '❎', key: m.key }})
-    throw m.reply(`Failed to process request: ${error.message || error}`);
+    let res = await axios.get(dlApi, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      timeout: 30000
+    })
+    session = res.data
+  } catch (e) {
+    return m.reply('❌ No se pudo iniciar la descarga. El video podría estar restringido.')
   }
-};
 
-handler.help = ['ytmp4v2 *<link>*','ytvdocv2 *<link>*'];
-handler.tags = ['downloader'];
-handler.command = /^(ytmp4v2|ytvdocv2|ytmp4docv2)$/i;
+  if (!session?.progress_url) return m.reply('⚠️ La API no devolvió un enlace válido de descarga.')
 
-handler.register = true
-handler.disable = false
+  let attempts = 0, videoData
+  while (attempts < 20) {
+    await new Promise(r => setTimeout(r, 3000))
+    try {
+      let res = await axios.get(session.progress_url)
+      if (res.data.download_url) {
+        videoData = res.data
+        break
+      }
+    } catch (e) {
+      // Reintentar
+    }
+    attempts++
+  }
+
+  if (!videoData?.download_url) return m.reply('❌ La descarga tardó demasiado. Intenta más tarde.')
+
+  await conn.sendMessage(m.chat, {
+    video: { url: videoData.download_url },
+    mimetype: 'video/mp4',
+    fileName: videoData.title || `${video.title}.mp4`
+  }, { quoted: m })
+
+  await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+}
+
+handler.help = ['ytmp4v2 <texto o link>']
+handler.tags = ['downloader']
+handler.command = /^ytmp4v2$/i
 
 export default handler
